@@ -1,4 +1,4 @@
-# import the necessary packages
+# imports
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import AveragePooling2D
@@ -44,7 +44,7 @@ class ResNet:
 		conv3 = Conv2D(K, (1, 1), use_bias=False,
 			kernel_regularizer=l2(reg))(act3)
 
-		# if we are to reduce the spatial size, apply a CONV layer to
+		# to reduce the spatial size, apply a CONV layer to
 		# the shortcut
 		if red:
 			shortcut = Conv2D(K, (1, 1), strides=stride,
@@ -70,7 +70,7 @@ class ResNet:
 			inputShape = (depth, height, width)
 			chanDim = 1
 
-		# set the input and apply BN
+		# set input and apply BN
 		inputs = Input(shape=inputShape)
 		x = BatchNormalization(axis=chanDim, epsilon=bnEps,
 			momentum=bnMom)(inputs)
