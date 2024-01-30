@@ -1,7 +1,7 @@
 # set the matplotlib backend so figures can be saved in the background
 import matplotlib
 matplotlib.use("Agg")
-# import the necessary packages
+# imports
 from tensorflow.keras.optimizers import SGD
 import os 
 import zipfile 
@@ -17,7 +17,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 import matplotlib.image as mpimg
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.optimizers import RMSprop
-# initialize the number of training epochs and batch size
+# decide number of training epochs and batch size
 NUM_EPOCHS = 25
 BS = 20
 # derive the path to the directories containing the training,
@@ -31,7 +31,7 @@ totalTrain = len(list(paths.list_images(TRAIN_PATH)))
 totalVal = len(list(paths.list_images(VAL_PATH)))
 totalTest = len(list(paths.list_images(TEST_PATH)))
 
-# initialize the training training data augmentation object
+# initialize training data augmentation object
 trainAug = ImageDataGenerator(
 	rescale=1 / 255.0,
 	rotation_range=40,
@@ -41,7 +41,7 @@ trainAug = ImageDataGenerator(
 	shear_range=0.2,
 	horizontal_flip=True,
 	fill_mode="nearest")
-# initialize the validation (and testing) data augmentation object
+# initialize validation (and testing) data augmentation object
 valAug = ImageDataGenerator(rescale=1 / 255.0)
 
 # initialize the training generator
@@ -69,7 +69,7 @@ testGen = valAug.flow_from_directory(
 	shuffle=False,
 	batch_size=BS)
 
-# initialize our Keras implementation of ResNet model and compile it
+# initialize Keras implementation of ResNet model and compiled
 model = InceptionV3(input_shape = (150, 150, 3), include_top = False, weights = 'imagenet')
 
 for layer in model.layers:
@@ -84,5 +84,5 @@ model = tf.keras.models.Model(model.input, x)
 model.compile(optimizer = RMSprop(lr=0.0001), loss = 'binary_crossentropy', metrics = ['acc'])
 
 
-# train our Keras model
+# train Keras model
 H = model.fit(trainGen, validation_data = valGen, steps_per_epoch = 60, epochs = 10)
