@@ -1,15 +1,15 @@
-# import the necessary packages
+# imports
 import os
 from imutils import paths
 import random
 import shutil
 import os
 
-# initialize the path to the *original* input directory of images
+# initialize path to the *original* input directory of images
 ORIG_INPUT_DATASET = "/content/drive/My Drive/snake_vs_nature"
 
 # initialize the base path to the *new* directory that will contain
-# our images after computing the training and testing split
+# the images after computing the training and testing split
 BASE_PATH = "/content/data"
 
 # derive the training, validation, and testing directories
@@ -48,7 +48,7 @@ datasets = [
 	("testing", testPaths, TEST_PATH)
 ]
 
-# loop over the datasets
+# loop over datasets
 for (dType, imagePaths, baseOutput) in datasets:
 	# show which data split we are creating
 	print("[INFO] building '{}' split".format(dType))
