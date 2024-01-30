@@ -1,4 +1,4 @@
-# plot the training loss and accuracy
+# plotting the training loss and accuracy
 N = 10
 plt.style.use("ggplot")
 plt.figure()
@@ -12,12 +12,12 @@ plt.ylabel("Loss/Accuracy")
 plt.legend(loc="lower left")
 plt.savefig('plots.png')
 
-# reset the testing generator and then use our trained model to
+# reset testing generator and then use trained model to
 # make predictions on the data
 print("[INFO] evaluating network...")
 testGen.reset()
 predIdxs = model.predict(x=testGen, steps=(totalTest // BS) + 1)
-# for each image in the testing set we need to find the index of the
+# for each image in the testing set must find the index of the
 # label with corresponding largest predicted probability
 predIdxs = np.argmax(predIdxs, axis=1)
 # show a nicely formatted classification report
