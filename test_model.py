@@ -1,4 +1,4 @@
-# import the necessary packages
+# imports
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from imutils import build_montages
@@ -23,11 +23,11 @@ model = load_model('/content/drive/My Drive/bestsnakev1.model')
 imagePaths = list(paths.list_images('/content/drive/My Drive/splitdata/testing'))
 random.shuffle(imagePaths)
 imagePaths = imagePaths[:16]
-# initialize our list of results
+# initialize list of results
 results = []
-# loop over our sampled image paths
+# loop over sampled image paths
 for p in imagePaths:
-	# load our original input image
+	# load original input image
 	orig = cv2.imread(p)
 	# pre-process our image by converting it from BGR to RGB channel
 	# ordering (since our Keras mdoel was trained on RGB ordering),
@@ -35,7 +35,7 @@ for p in imagePaths:
 	# to the range [0, 1]
 
 	# order channel dimensions (channels-first or channels-last)
-	# depending on our Keras backend, then add a batch dimension to
+	# depending on the Keras backend, then add a batch dimension to
 	# the image
 	image = load_img(p, target_size=(150, 150))
 	image = img_to_array(image)  #output Numpy-array
@@ -52,7 +52,7 @@ for p in imagePaths:
 	label = "snake" if x[0] > .85 else "no snake"
 	color = (0, 0, 255) if x[0] < .85 else (0, 255, 0)
   
-	# resize our original input (so we can better visualize it) and
+	# resize original input (to better visualize it) and
 	# then draw the label on the image
 	orig = cv2.resize(orig, (128, 128))
 	cv2.putText(orig, label, (3, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
