@@ -1,5 +1,9 @@
-"""Legacy file retained only as an archive pointer.
+"""Legacy entrypoint retained for compatibility.
 
-Original custom ResNet prototype is archived at `legacy/model_legacy.py`.
-Current production workflow uses `src/snake_detector/models.py`.
+Current model definitions live in `src/snake_detector/models.py`.
+Original prototype archived at `legacy/model_legacy.py`.
 """
+
+from snake_detector.models import ModelSpec, build_binary_classifier
+
+__all__ = ["ModelSpec", "build_binary_classifier"]

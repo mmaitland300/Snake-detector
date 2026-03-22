@@ -1,7 +1,10 @@
-"""Legacy file retained only as an archive pointer.
+"""Legacy entrypoint retained for compatibility.
 
-The old Colab evaluation/save logic is archived at `legacy/savemodel_legacy.py`.
-Use the package CLI instead:
-  - `python -m snake_detector.cli train`
-  - `python -m snake_detector.cli eval`
+Use `python -m snake_detector.cli train` instead.
+Original script archived at `legacy/savemodel_legacy.py`.
 """
+
+from snake_detector.cli import main
+
+if __name__ == "__main__":
+    raise SystemExit(main(["train"]))
