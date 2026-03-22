@@ -36,6 +36,8 @@ def split_dataset(
         raise ValueError("val_split must be between 0 and 1.")
 
     image_paths = [str(p) for p in raw_dir.rglob("*") if p.suffix.lower() in {".jpg", ".jpeg", ".png"}]
+    if not image_paths:
+        raise FileNotFoundError(f"No images found under {raw_dir}")
     random.seed(seed)
     random.shuffle(image_paths)
 
@@ -68,7 +70,7 @@ def split_dataset(
     )
 
 
-def build_generators(split_dir: Path, image_size: int, batch_size: int):
+def build_generators(split_dir: Path, image_size: int, batch_size: int, seed: int = 42):
     """Build tf.keras generators with consistent Inception preprocessing."""
     try:
         from tensorflow.keras.applications.inception_v3 import preprocess_input
@@ -99,6 +101,7 @@ def build_generators(split_dir: Path, image_size: int, batch_size: int):
     train_gen = train_aug.flow_from_directory(
         str(split_dir / "training"),
         shuffle=True,
+        seed=seed,
         **common_args,
     )
     val_gen = eval_aug.flow_from_directory(

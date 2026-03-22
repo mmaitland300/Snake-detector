@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 import random
-from dataclasses import asdict
 from pathlib import Path
 
 import joblib
@@ -40,6 +39,7 @@ def train_model(config: AppConfig) -> dict:
         split_dir=config.data.split_dir,
         image_size=config.train.image_size,
         batch_size=config.train.batch_size,
+        seed=config.data.seed,
     )
     model = build_binary_classifier(
         ModelSpec(
@@ -90,6 +90,7 @@ def evaluate_saved_model(config: AppConfig) -> dict:
         split_dir=config.data.split_dir,
         image_size=config.train.image_size,
         batch_size=config.train.batch_size,
+        seed=config.data.seed,
     )
     model = load_model(config.paths.model_path)
     return evaluate_model(model, test_gen, config)
@@ -243,62 +244,6 @@ def _save_training_curves(history: dict, output_path: Path) -> None:
     ensure_parent(output_path)
     plt.savefig(output_path, bbox_inches="tight")
     plt.close()
-
-
-def metrics_markdown_table(metrics: dict) -> str:
-    return (
-        "| Metric | Value |\n"
-        "| --- | ---: |\n"
-        f"| Accuracy | {metrics.get('accuracy', 0):.4f} |\n"
-        f"| Macro Precision | {metrics.get('macro_precision', 0):.4f} |\n"
-        f"| Macro Recall | {metrics.get('macro_recall', 0):.4f} |\n"
-        f"| Macro F1 | {metrics.get('macro_f1', 0):.4f} |\n"
-    )
-
-
-def write_run_summary(config: AppConfig, metrics: dict, output_path: Path) -> None:
-    ensure_parent(output_path)
-    payload = {
-        "config": asdict(config),
-        "metrics": metrics,
-    }
-    output_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
-
-
-def write_confusion_matrix_markdown(metrics: dict, output_path: Path) -> None:
-    class_names = metrics.get("class_names", ["no_snake", "snake"])
-    matrix = metrics.get("confusion_matrix", [[0, 0], [0, 0]])
-    content = (
-        "# Confusion Matrix\n\n"
-        f"| Actual \\\\ Predicted | {class_names[0]} | {class_names[1]} |\n"
-        "| --- | ---: | ---: |\n"
-        f"| {class_names[0]} | {matrix[0][0]} | {matrix[0][1]} |\n"
-        f"| {class_names[1]} | {matrix[1][0]} | {matrix[1][1]} |\n\n"
-        f"Source of truth: `{metrics.get('confusion_matrix_path', 'artifacts/confusion_matrix.png')}`.\n"
-    )
-    ensure_parent(output_path)
-    output_path.write_text(content, encoding="utf-8")
-
-
-def write_sample_predictions_markdown(predictions_path: Path, output_path: Path) -> None:
-    samples = json.loads(predictions_path.read_text(encoding="utf-8"))
-    rows = []
-    for sample in samples:
-        rows.append(
-            f"| `{sample['image_path']}` | {sample['ground_truth']} | {sample['prediction']} | "
-            f"{sample['confidence']:.4f} | {sample['selection_reason']} |"
-        )
-
-    content = (
-        "# Sample Predictions\n\n"
-        "Representative examples pulled from the evaluated test split.\n\n"
-        "| Image | Ground Truth | Prediction | Confidence | Notes |\n"
-        "| --- | --- | --- | ---: | --- |\n"
-        + "\n".join(rows)
-        + "\n"
-    )
-    ensure_parent(output_path)
-    output_path.write_text(content, encoding="utf-8")
 
 
 def _train_sklearn_model(config: AppConfig) -> dict:
@@ -457,7 +402,7 @@ def _select_sample_predictions(
         "failure": [],
     }
 
-    for image_path, truth, pred, score in zip(image_paths, true_labels, pred_labels, scores, strict=False):
+    for image_path, truth, pred, score in zip(image_paths, true_labels, pred_labels, scores, strict=True):
         predicted_label = class_names[int(pred)]
         truth_label = class_names[int(truth)]
         confidence = float(score if predicted_label == "snake" else 1.0 - score)
