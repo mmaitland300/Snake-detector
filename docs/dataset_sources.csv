@@ -1,0 +1,3 @@
+source_name,source_url,license,redistribution_allowed,required_attribution,date_accessed,notes
+Original prototype corpus,Local-only historical dataset assembled from web sources,Unknown / unverified,No,Do not publish until each source is individually cleared,2026-03-21,Excluded from repo assets and public examples
+Synthetic placeholder demo dataset,Generated locally via python -m snake_detector.demo_data,Original work created in this repository,Yes,No third-party attribution required for the generated images themselves,2026-03-21,Approved source for README screenshots benchmark artifacts and demo validation
