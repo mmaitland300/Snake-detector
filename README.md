@@ -21,6 +21,7 @@ The repository is intentionally honest about legality and scope:
 - Portfolio website: Vercel
 - Demo host: Hugging Face Spaces (Gradio)
 - Model artifact host: GitHub Release asset
+- Current release artifact: [v1.0.0 model.joblib](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib)
 - Fallback when the live demo is unavailable: local validation evidence + checked-in proof artifacts
 
 Decision record: [docs/deployment_decision.md](docs/deployment_decision.md)
