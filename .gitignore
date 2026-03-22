@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# Artifacts
+artifacts/
+models/
+*.h5
+*.keras
+*.onnx
+*.tflite
+
+# Data
+data/
+datasets/
+splitdata/
+*.zip
+
+# Notebook / IDE / OS
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
