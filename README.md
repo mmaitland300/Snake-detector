@@ -1,6 +1,6 @@
 # Snake Detector
 
-Portfolio-oriented ML engineering project that turns a Colab-era image classifier prototype into a reproducible package, CLI, tests, CI workflow, and local demo.
+ML engineering project that turns a Colab-era image classifier prototype into a reproducible package, CLI, tests, CI workflow, and local demo.
 
 The repository is intentionally honest about legality and scope:
 
