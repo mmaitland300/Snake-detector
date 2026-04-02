@@ -17,14 +17,18 @@ For Keras models trained at a non-default size, keep `artifacts/run_config.json`
 
 ## Hugging Face Spaces setup
 
-1. Create a new Space with **Gradio** SDK.
-2. Upload:
-   - `app/gradio_app.py`
-   - `requirements.txt` (or use this repo's optional dependency list)
-   - model artifact (`artifacts/model.joblib` for the placeholder-safe baseline, or `artifacts/model.keras` for a TensorFlow build)
-   - any approved demo images you want to showcase publicly.
-3. Set Space hardware to CPU Basic (free tier).
-4. Copy Space URL into your Vercel project page.
+Spaces need a module with **`demo`** at import time and no **`launch()`** at import. This repo supports:
+
+- Root [`app.py`](../app.py) - thin re-export of `demo` from `app/gradio_app.py` (works with HF's default `app.py`).
+- [`app/gradio_app.py`](gradio_app.py) - set `app_file: app/gradio_app.py` in the Space README if you want the entry under `app/` only.
+
+Bootstrap: [`hf_bootstrap.py`](hf_bootstrap.py) downloads [release `model.joblib`](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib) when missing (idempotent, timeout, atomic write). See [docs/hf_space.md](../docs/hf_space.md).
+
+[`requirements.txt`](../requirements.txt) installs `.[demo]` from the Space root.
+
+After deploy, set portfolio **`NEXT_PUBLIC_SNAKE_DEMO_URL`** to the **direct app URL** `https://<space-subdomain>.hf.space` (not the `huggingface.co/spaces/...` page). Details: [docs/hf_space.md](../docs/hf_space.md).
+
+**Manual artifact fallback:** if download fails, add `artifacts/model.joblib` via the Space Files tab (do not commit large binaries to git). For a TensorFlow demo path, use `artifacts/model.keras` and install `.[ml,demo]` instead (heavier than CPU sklearn-only Spaces).
 
 ## Cold-start note
 

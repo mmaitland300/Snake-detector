@@ -14,7 +14,7 @@ The repository is intentionally honest about legality and scope:
   `split -> train -> eval -> predict`
 - Local Gradio app updated to load the validated placeholder artifact at `artifacts/model.joblib`
 - Final artifact-hosting choice documented as **GitHub Release asset**
-- Live Hugging Face Space is still a manual publish step and no public Space URL is claimed yet
+- Hugging Face Space deployment: [`app/gradio_app.py`](app/gradio_app.py) (or default root [`app.py`](app.py) re-export) + [`requirements.txt`](requirements.txt); see [docs/hf_space.md](docs/hf_space.md). After deploy, set portfolio `NEXT_PUBLIC_SNAKE_DEMO_URL` to the **app URL** `https://<subdomain>.hf.space`, not the Space repo page.
 
 ## Deployment Plan
 
@@ -99,6 +99,8 @@ python -m venv .venv
 .venv\Scripts\python app/gradio_app.py
 ```
 
+To mirror the Hugging Face Space entrypoint (same module as default root `app.py`): `pip install -e ".[demo]"` then `python app.py`.
+
 ## Proof Package
 
 - Benchmark table: [docs/assets/benchmark_table.md](docs/assets/benchmark_table.md)
@@ -145,7 +147,7 @@ Representative correct and failure cases:
 - This is a binary `snake` vs `no_snake` prototype, not species identification software.
 - The public benchmark in this repo is on generated placeholder imagery, not licensed wildlife photography.
 - The original scraped prototype corpus remains excluded from redistribution until each source is rights-cleared.
-- A public Hugging Face Space has not been published from this workspace yet, so the repo only claims validated local demo readiness.
+- A live Space URL is per-account: create the Space from this repo ([docs/hf_space.md](docs/hf_space.md)); until you publish and set `NEXT_PUBLIC_SNAKE_DEMO_URL`, treat the demo as validated locally and on HF after your first successful build.
 
 ## Resume-Ready Bullets
 

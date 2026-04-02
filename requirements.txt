@@ -1,0 +1,3 @@
+# Hugging Face Spaces: install this repo from the Space root with Gradio extras (CPU / scikit-learn path).
+# Equivalent manual line: pip install ".[demo]"
+.[demo]
