@@ -480,7 +480,7 @@ def test_fetch_json_raises_after_exhausting_retries(monkeypatch) -> None:
             user_agent="test-agent",
         )
 
-    assert sleeps == [2.0, 5.0, 15.0, 45.0]
+    assert sleeps == list(collect_module._REQUEST_RETRY_DELAYS_SEC)
 
 
 def test_fetch_binary_retries_after_url_error(monkeypatch) -> None:

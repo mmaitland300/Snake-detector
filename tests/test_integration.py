@@ -43,7 +43,14 @@ def test_full_sklearn_pipeline(pipeline_dir: Path) -> None:
     assert metrics.exists()
 
     data = json.loads(metrics.read_text(encoding="utf-8"))
-    for key in ("accuracy", "macro_precision", "macro_recall", "macro_f1", "confusion_matrix"):
+    for key in (
+        "accuracy",
+        "macro_precision",
+        "macro_recall",
+        "macro_f1",
+        "confusion_matrix",
+        "decision_threshold",
+    ):
         assert key in data, f"Missing metric key: {key}"
 
     assert cli_main([

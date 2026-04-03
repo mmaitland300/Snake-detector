@@ -22,6 +22,15 @@ class TrainConfig:
     learning_rate: float = 1e-4
     backbone: str = "inceptionv3"
     freeze_backbone: bool = True
+    # Balanced weights from training folder counts (Keras class_weight; sklearn sample_weight).
+    use_class_weights: bool = True
+
+
+@dataclass(slots=True)
+class InferenceConfig:
+    """Binary decision rule: predict snake if P(snake) >= decision_threshold."""
+
+    decision_threshold: float = 0.5
 
 
 @dataclass(slots=True)
@@ -37,6 +46,7 @@ class PathsConfig:
 class AppConfig:
     data: DataConfig = field(default_factory=DataConfig)
     train: TrainConfig = field(default_factory=TrainConfig)
+    inference: InferenceConfig = field(default_factory=InferenceConfig)
     paths: PathsConfig = field(default_factory=PathsConfig)
 
 

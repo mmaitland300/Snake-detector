@@ -2,14 +2,27 @@ $ErrorActionPreference = "Stop"
 
 Set-Location "C:\dev\Cursor Projects\Snake-detector"
 
-function Run-Python {
-    param(
-        [Parameter(ValueFromRemainingArguments = $true)]
-        [string[]]$PythonArgs
-    )
-    & .\.venv\Scripts\python @PythonArgs
+function Invoke-DownloadManifestJson {
+    $stdout = & .\.venv\Scripts\python -m snake_detector.cli download-manifest --manifest-path $manifest --output-dir $rawDir 2>&1
+    $text = ($stdout | ForEach-Object { $_.ToString() }) -join "`n"
+    Write-Host $text
+    $summary = $null
+    try {
+        $summary = $text | ConvertFrom-Json
+    } catch {
+        # fall through; handle below
+    }
+    if ($null -ne $summary) {
+        $line = "  -> downloaded=$($summary.downloaded) skipped_existing=$($summary.skipped_existing) failed=$($summary.failed) output_dir=$($summary.output_dir)"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host $line -ForegroundColor Yellow
+        } else {
+            Write-Host $line -ForegroundColor DarkCyan
+        }
+    }
     if ($LASTEXITCODE -ne 0) {
-        throw "Python command failed with exit code ${LASTEXITCODE}. Re-run the failing line from this script."
+        Write-Host "`n========== download-manifest failed (exit $LASTEXITCODE); see JSON above ==========" -ForegroundColor Yellow
+        throw "download-manifest exited with code ${LASTEXITCODE} (nonzero failed count or other error). Re-run to resume skipped/failed rows."
     }
 }
 
@@ -22,9 +35,14 @@ if (-not (Test-Path $manifest)) {
 }
 
 New-Item -ItemType Directory -Force "data/manifests/snapshots" | Out-Null
-Copy-Item -LiteralPath $manifest -Destination $preSnapshot -Force
+if (-not (Test-Path -LiteralPath $preSnapshot)) {
+    Copy-Item -LiteralPath $manifest -Destination $preSnapshot
+    Write-Host "Saved pre-download manifest snapshot: $preSnapshot" -ForegroundColor DarkCyan
+} else {
+    Write-Host "Pre-download snapshot already exists; not overwriting: $preSnapshot" -ForegroundColor DarkCyan
+}
 
-Run-Python -m snake_detector.cli download-manifest --manifest-path $manifest --output-dir $rawDir
+Invoke-DownloadManifestJson
 
 Write-Host ""
 Write-Host "Phase 2 complete." -ForegroundColor Green

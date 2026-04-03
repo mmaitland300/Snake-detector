@@ -13,9 +13,15 @@ from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confu
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils.class_weight import compute_class_weight
 
 from .config import AppConfig, ensure_parent, save_config
-from .data import RAW_IMAGE_EXTENSIONS, build_generators, count_split_images
+from .data import (
+    RAW_IMAGE_EXTENSIONS,
+    build_generators,
+    count_split_images,
+    keras_balanced_class_weights,
+)
 from .models import ModelSpec, build_binary_classifier
 
 
@@ -32,6 +38,7 @@ def set_seed(seed: int) -> None:
 
 def _skipped_test_metrics(config: AppConfig, class_names: list[str]) -> dict:
     """Persist metrics JSON when the testing split has no images (e.g. tiny grouped split)."""
+    t = float(config.inference.decision_threshold)
     metrics = {
         "accuracy": None,
         "macro_precision": None,
@@ -40,6 +47,7 @@ def _skipped_test_metrics(config: AppConfig, class_names: list[str]) -> dict:
         "classification_report": {},
         "confusion_matrix": [],
         "class_names": class_names,
+        "decision_threshold": t,
         "confusion_matrix_path": str(config.paths.confusion_matrix_path),
         "predictions_panel_path": str(config.paths.predictions_panel_path),
         "predictions_manifest_path": str(config.paths.predictions_manifest_path),
@@ -78,6 +86,10 @@ def train_model(config: AppConfig) -> dict:
     fit_kwargs: dict = {"epochs": config.train.epochs}
     if val_gen is not None:
         fit_kwargs["validation_data"] = val_gen
+    if config.train.use_class_weights:
+        cw = keras_balanced_class_weights(config.data.split_dir / "training")
+        if cw is not None:
+            fit_kwargs["class_weight"] = cw
     history = model.fit(train_gen, **fit_kwargs)
     ensure_parent(config.paths.model_path)
     model.save(config.paths.model_path)
@@ -85,7 +97,7 @@ def train_model(config: AppConfig) -> dict:
     if test_gen is None:
         metrics = _keras_test_skipped_metrics(config, train_gen)
     else:
-        metrics = evaluate_model(model, test_gen, config)
+        metrics = evaluate_model(model, test_gen, config, decision_threshold=config.inference.decision_threshold)
     metrics["history"] = history.history
     _save_training_curves(history.history, config.paths.metrics_path.parent / "training_curves.png")
     save_config(config, config.paths.metrics_path.parent / "run_config.json")
@@ -103,7 +115,8 @@ def evaluate_saved_model(config: AppConfig) -> dict:
             return _skipped_test_metrics(config, class_names)
         x_test = np.stack([_extract_feature_vector(path, artifact["feature_size"]) for path in test_images])
         scores = artifact["classifier"].predict_proba(x_test)[:, 1]
-        pred_labels = artifact["classifier"].predict(x_test)
+        t = float(config.inference.decision_threshold)
+        pred_labels = (scores >= t).astype(int)
         return _save_evaluation_outputs(
             true_labels=np.array(test_labels),
             pred_labels=np.array(pred_labels),
@@ -111,6 +124,7 @@ def evaluate_saved_model(config: AppConfig) -> dict:
             class_names=class_names,
             image_paths=test_images,
             config=config,
+            decision_threshold=t,
         )
 
     try:
@@ -130,14 +144,25 @@ def evaluate_saved_model(config: AppConfig) -> dict:
             "Use a split with test samples or a different split strategy."
         )
     model = load_model(config.paths.model_path)
-    return evaluate_model(model, test_gen, config)
+    return evaluate_model(
+        model, test_gen, config, decision_threshold=config.inference.decision_threshold
+    )
 
 
-def evaluate_model(model, test_gen, config: AppConfig) -> dict:
+def evaluate_model(
+    model,
+    test_gen,
+    config: AppConfig,
+    *,
+    decision_threshold: float,
+) -> dict:
+    t = float(decision_threshold)
+    if not 0.0 <= t <= 1.0:
+        raise ValueError(f"decision_threshold must be in [0, 1], got {t}")
     test_gen.reset()
     raw_preds = model.predict(test_gen)
     scores = raw_preds.flatten()
-    pred_labels = (scores >= 0.5).astype(int)
+    pred_labels = (scores >= t).astype(int)
     true_labels = test_gen.classes
     image_paths = [Path(test_gen.directory) / filename for filename in test_gen.filenames]
     return _save_evaluation_outputs(
@@ -147,7 +172,35 @@ def evaluate_model(model, test_gen, config: AppConfig) -> dict:
         class_names=list(test_gen.class_indices.keys()),
         image_paths=image_paths,
         config=config,
+        decision_threshold=t,
     )
+
+
+def resolve_decision_threshold(explicit: float | None) -> float:
+    """P(snake) cutoff: CLI arg, else env ``SNAKE_DETECTOR_THRESHOLD``, else 0.5.
+
+    If ``SNAKE_DETECTOR_THRESHOLD`` is set to a non-empty value, it must parse as a float
+    in ``[0, 1]``; otherwise :class:`ValueError` is raised (no silent fallback).
+    """
+    if explicit is not None:
+        t = float(explicit)
+        if not 0.0 <= t <= 1.0:
+            raise ValueError(f"decision_threshold must be in [0, 1], got {t}")
+        return t
+    env_raw = os.environ.get("SNAKE_DETECTOR_THRESHOLD", "").strip()
+    if not env_raw:
+        return 0.5
+    try:
+        t = float(env_raw)
+    except ValueError as exc:
+        raise ValueError(
+            f"SNAKE_DETECTOR_THRESHOLD must be a number in [0, 1], got {env_raw!r}"
+        ) from exc
+    if not 0.0 <= t <= 1.0:
+        raise ValueError(
+            f"SNAKE_DETECTOR_THRESHOLD must be in [0, 1], got {t} (parsed from {env_raw!r})"
+        )
+    return t
 
 
 def resolve_prediction_image_size(model_path: Path, *, default: int = 150) -> int:
@@ -212,15 +265,23 @@ def _infer_keras_input_spatial_size(model_path: Path, *, default: int) -> int:
     return default
 
 
-def predict_image(model_path: Path, image_path: Path, image_size: int = 150) -> tuple[str, float]:
+def predict_image(
+    model_path: Path,
+    image_path: Path,
+    image_size: int = 150,
+    *,
+    decision_threshold: float | None = None,
+) -> tuple[str, float]:
     artifact = _maybe_load_joblib_artifact(model_path)
     if artifact is not None:
         vector = _extract_feature_vector(image_path, artifact["feature_size"])
         probabilities = artifact["classifier"].predict_proba(vector.reshape(1, -1))[0]
         class_names = artifact["class_names"]
-        pred_idx = int(np.argmax(probabilities))
-        confidence = float(probabilities[pred_idx])
-        return class_names[pred_idx], confidence
+        t = resolve_decision_threshold(decision_threshold)
+        p_snake = float(probabilities[class_names.index("snake")]) if "snake" in class_names else 0.0
+        label = "snake" if p_snake >= t else "no_snake"
+        confidence = p_snake if label == "snake" else 1.0 - p_snake
+        return label, float(confidence)
 
     try:
         from tensorflow.keras.applications.inception_v3 import preprocess_input
@@ -228,14 +289,15 @@ def predict_image(model_path: Path, image_path: Path, image_size: int = 150) -> 
     except ImportError as exc:
         raise RuntimeError("TensorFlow is required. Install with `pip install .[ml]`.") from exc
 
+    t = resolve_decision_threshold(decision_threshold)
     image = Image.open(image_path).convert("RGB").resize((image_size, image_size))
     arr = np.asarray(image, dtype=np.float32)
     arr = preprocess_input(arr)
     arr = np.expand_dims(arr, axis=0)
     model = load_model(model_path)
-    confidence = float(model.predict(arr)[0][0])
-    label = "snake" if confidence >= 0.5 else "no_snake"
-    display_confidence = confidence if label == "snake" else 1.0 - confidence
+    p_snake = float(model.predict(arr, verbose=0)[0][0])
+    label = "snake" if p_snake >= t else "no_snake"
+    display_confidence = p_snake if label == "snake" else 1.0 - p_snake
     return label, float(display_confidence)
 
 
@@ -273,7 +335,6 @@ def _save_training_curves(history: dict, output_path: Path) -> None:
     if not loss:
         plt.close()
         return
-    epochs = range(1, len(loss) + 1)
     series = [
         (loss, "train_loss"),
         (history.get("val_loss", []), "val_loss"),
@@ -315,7 +376,15 @@ def _train_sklearn_model(config: AppConfig) -> dict:
             ),
         ]
     )
-    classifier.fit(x_train, train_labels)
+    fit_params: dict = {}
+    if config.train.use_class_weights:
+        y = np.asarray(train_labels)
+        classes = np.unique(y)
+        balanced = compute_class_weight("balanced", classes=classes, y=y)
+        weight_map = {int(c): float(w) for c, w in zip(classes, balanced, strict=True)}
+        sample_w = np.array([weight_map[int(yi)] for yi in y], dtype=np.float64)
+        fit_params["mlp__sample_weight"] = sample_w
+    classifier.fit(x_train, train_labels, **fit_params)
 
     artifact = {
         "backend": "sklearn_mlp",
@@ -331,7 +400,8 @@ def _train_sklearn_model(config: AppConfig) -> dict:
     else:
         x_test = np.stack([_extract_feature_vector(path, feature_size) for path in test_images])
         scores = classifier.predict_proba(x_test)[:, 1]
-        pred_labels = classifier.predict(x_test)
+        t = float(config.inference.decision_threshold)
+        pred_labels = (scores >= t).astype(int)
         metrics = _save_evaluation_outputs(
             true_labels=np.array(test_labels),
             pred_labels=np.array(pred_labels),
@@ -339,6 +409,7 @@ def _train_sklearn_model(config: AppConfig) -> dict:
             class_names=class_names,
             image_paths=test_images,
             config=config,
+            decision_threshold=t,
         )
     metrics["history"] = {
         "backend": "sklearn_mlp",
@@ -356,6 +427,8 @@ def _save_evaluation_outputs(
     class_names: list[str],
     image_paths: list[Path],
     config: AppConfig,
+    *,
+    decision_threshold: float,
 ) -> dict:
     report = classification_report(
         true_labels,
@@ -400,6 +473,7 @@ def _save_evaluation_outputs(
         "classification_report": report,
         "confusion_matrix": matrix,
         "class_names": class_names,
+        "decision_threshold": float(decision_threshold),
         "confusion_matrix_path": str(config.paths.confusion_matrix_path),
         "predictions_panel_path": str(config.paths.predictions_panel_path),
         "predictions_manifest_path": str(config.paths.predictions_manifest_path),

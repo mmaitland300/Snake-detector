@@ -1,0 +1,6 @@
+{
+  "model_path": "artifacts/collection_main_v1_weighted/model.keras",
+  "image_size": 160,
+  "threshold": 0.76,
+  "preprocessing": "inception_v3_preprocess_input"
+}

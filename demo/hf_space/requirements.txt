@@ -1,0 +1,5 @@
+# Hugging Face Space: pin loosely; Space rebuilds pick current minors.
+tensorflow>=2.16,<3
+gradio>=5.0
+numpy>=1.26
+pillow>=10.0

@@ -28,9 +28,9 @@ _INAT_REFERER = "https://www.inaturalist.org/"
 _REQUEST_TIMEOUT_SEC = 60
 _RETRYABLE_HTTP_STATUS_CODES = frozenset({403, 429, 500, 502, 503, 504})
 # One initial attempt plus len(delays) retries; longer gaps help edge 403/WAF cool-downs.
-_REQUEST_RETRY_DELAYS_SEC = (2.0, 5.0, 15.0, 45.0)
+_REQUEST_RETRY_DELAYS_SEC = (2.0, 5.0, 15.0, 45.0, 90.0)
 # Pause between observation pages to avoid hammering the API on long runs.
-_INAT_OBSERVATIONS_PAGE_DELAY_SEC = 0.5
+_INAT_OBSERVATIONS_PAGE_DELAY_SEC = 2.0
 MANIFEST_FIELDS = [
     "label",
     "provider",
@@ -392,7 +392,13 @@ def write_manifest(
     mode = "a" if append and manifest_path.exists() else "w"
     write_header = mode == "w"
     written = 0
-    with manifest_path.open(mode, newline="", encoding="utf-8") as handle:
+    try:
+        handle = manifest_path.open(mode, newline="", encoding="utf-8")
+    except PermissionError as exc:
+        raise PermissionError(
+            f"Cannot open manifest for writing (close Excel or other programs locking the file): {manifest_path}"
+        ) from exc
+    with handle:
         writer = csv.DictWriter(handle, fieldnames=MANIFEST_FIELDS)
         if write_header:
             writer.writeheader()
@@ -460,9 +466,19 @@ def _fetch_json(url: str, *, params: dict[str, Any], user_agent: str) -> dict[st
         request_url,
         headers=_inaturalist_request_headers(user_agent, accept="application/json"),
     )
-    payload = _read_url_bytes_with_retry(request, timeout=_REQUEST_TIMEOUT_SEC)
-    payload = payload.decode("utf-8")
-    return json.loads(payload)
+    raw = _read_url_bytes_with_retry(request, timeout=_REQUEST_TIMEOUT_SEC)
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"iNaturalist API response was not valid UTF-8 ({request_url})") from exc
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as exc:
+        preview = text[:800] if len(text) > 800 else text
+        raise ValueError(
+            f"iNaturalist API returned non-JSON (often HTML or an error page). URL: {request_url}. "
+            f"Preview: {preview!r}"
+        ) from exc
 
 
 def _fetch_binary(url: str, *, user_agent: str) -> bytes:

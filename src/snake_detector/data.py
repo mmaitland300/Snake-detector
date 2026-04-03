@@ -125,6 +125,39 @@ def count_split_images(split_root: Path) -> int:
     )
 
 
+def count_split_images_per_class(split_root: Path) -> dict[str, int]:
+    """Count images per class folder (top-level subdirectories only)."""
+    if not split_root.is_dir():
+        return {}
+    counts: dict[str, int] = {}
+    for class_dir in sorted(p for p in split_root.iterdir() if p.is_dir()):
+        n = sum(
+            1
+            for path in class_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in RAW_IMAGE_EXTENSIONS
+        )
+        counts[class_dir.name] = n
+    return counts
+
+
+def keras_balanced_class_weights(training_dir: Path) -> dict[int, float] | None:
+    """``class_weight`` for ``model.fit`` matching ``flow_from_directory`` class index order.
+
+    Uses the sklearn balanced formula ``n_samples / (n_classes * count)`` per class.
+    Returns ``None`` if fewer than two classes or any class has zero images.
+    """
+    counts_map = count_split_images_per_class(training_dir)
+    if len(counts_map) < 2:
+        return None
+    class_names = sorted(counts_map.keys())
+    counts = [counts_map[name] for name in class_names]
+    if any(c <= 0 for c in counts):
+        return None
+    n_samples = float(sum(counts))
+    n_classes = float(len(counts))
+    return {idx: n_samples / (n_classes * float(counts[idx])) for idx in range(len(class_names))}
+
+
 def _grouped_split_paths(
     *,
     image_paths: list[str],

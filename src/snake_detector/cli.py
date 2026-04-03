@@ -13,6 +13,7 @@ from .collect import (
 from .config import AppConfig
 from .data import split_dataset
 from .evaluate import run_evaluate
+from .pipeline import resolve_decision_threshold, resolve_prediction_image_size
 from .predict import run_predict
 from .train import run_train
 
@@ -50,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
     train_cmd.add_argument("--learning-rate", type=float, default=1e-4)
     train_cmd.add_argument("--seed", type=int, default=42)
     train_cmd.add_argument("--backbone", type=str, default="inceptionv3")
+    train_cmd.add_argument(
+        "--no-class-weights",
+        action="store_true",
+        help="Disable balanced class weights (reproduces legacy unweighted training).",
+    )
     train_cmd.add_argument("--confusion-matrix-path", type=Path, default=None)
     train_cmd.add_argument("--predictions-panel-path", type=Path, default=None)
     train_cmd.add_argument("--predictions-manifest-path", type=Path, default=None)
@@ -61,6 +67,13 @@ def build_parser() -> argparse.ArgumentParser:
     eval_cmd.add_argument("--image-size", type=int, default=150)
     eval_cmd.add_argument("--batch-size", type=int, default=20)
     eval_cmd.add_argument("--backbone", type=str, default="inceptionv3")
+    eval_cmd.add_argument(
+        "--threshold",
+        type=float,
+        default=0.5,
+        metavar="T",
+        help="P(snake) cutoff for class prediction (default 0.5). Tune on validation, then freeze for test.",
+    )
     eval_cmd.add_argument("--confusion-matrix-path", type=Path, default=None)
     eval_cmd.add_argument("--predictions-panel-path", type=Path, default=None)
     eval_cmd.add_argument("--predictions-manifest-path", type=Path, default=None)
@@ -69,6 +82,13 @@ def build_parser() -> argparse.ArgumentParser:
     predict_cmd.add_argument("--model-path", type=Path, default=Path("artifacts/model.keras"))
     predict_cmd.add_argument("--image-path", type=Path, required=True)
     predict_cmd.add_argument("--image-size", type=int, default=150)
+    predict_cmd.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        metavar="T",
+        help="P(snake) cutoff (default: env SNAKE_DETECTOR_THRESHOLD or 0.5).",
+    )
 
     collect_cmd = subparsers.add_parser(
         "collect-inat",
@@ -177,6 +197,7 @@ def main(argv: list[str] | None = None) -> int:
         cfg.train.epochs = args.epochs
         cfg.train.learning_rate = args.learning_rate
         cfg.train.backbone = args.backbone
+        cfg.train.use_class_weights = not args.no_class_weights
         if args.confusion_matrix_path is not None:
             cfg.paths.confusion_matrix_path = args.confusion_matrix_path
         if args.predictions_panel_path is not None:
@@ -188,6 +209,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "eval":
+        if not 0.0 <= args.threshold <= 1.0:
+            parser.error("--threshold must be between 0 and 1")
         cfg = AppConfig()
         cfg.data.split_dir = args.split_dir
         cfg.paths.model_path = args.model_path
@@ -195,6 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         cfg.train.image_size = args.image_size
         cfg.train.batch_size = args.batch_size
         cfg.train.backbone = args.backbone
+        cfg.inference.decision_threshold = float(args.threshold)
         if args.confusion_matrix_path is not None:
             cfg.paths.confusion_matrix_path = args.confusion_matrix_path
         if args.predictions_panel_path is not None:
@@ -206,8 +230,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "predict":
-        label, confidence = run_predict(args.model_path, args.image_path, args.image_size)
-        print(json.dumps({"label": label, "confidence": confidence}, indent=2))
+        if args.threshold is not None and not 0.0 <= args.threshold <= 1.0:
+            parser.error("--threshold must be between 0 and 1")
+        t = resolve_decision_threshold(args.threshold)
+        img_size = resolve_prediction_image_size(args.model_path, default=args.image_size)
+        label, confidence = run_predict(
+            args.model_path,
+            args.image_path,
+            img_size,
+            decision_threshold=t,
+        )
+        print(
+            json.dumps(
+                {"label": label, "confidence": confidence, "decision_threshold": t},
+                indent=2,
+            )
+        )
         return 0
 
     if args.command == "collect-inat":
@@ -274,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         result["output_dir"] = str(args.output_dir)
         print(json.dumps(result, indent=2))
-        return 0
+        return 1 if result["failed"] > 0 else 0
 
     parser.print_help()
     return 1
