@@ -21,8 +21,14 @@ models/
 *.onnx
 *.tflite
 
-# Data
-data/
+# Data (bulk trees stay local; allow manifests/snapshots scaffold only)
+data/*
+!data/manifests/
+data/manifests/*
+!data/manifests/snapshots/
+data/manifests/snapshots/*
+!data/manifests/snapshots/.gitkeep
+# Everything else under snapshots/ = generated CSVs/backups (local only; use git add -f to version one)
 datasets/
 splitdata/
 *.zip

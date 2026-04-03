@@ -32,6 +32,7 @@ Two dataset lanes are tracked separately:
 
 1. Original prototype corpus: local-only, rights not verified, excluded from publication.
 2. Approved public-safe dataset: generated locally with `python -m snake_detector.demo_data` and used for README/demo artifacts.
+3. Real-image retraining lane: local manifest + download workflow for rights-aware wildlife-photo collection; see [docs/real_image_collection.md](docs/real_image_collection.md).
 
 Legal references:
 
@@ -147,6 +148,7 @@ Representative correct and failure cases:
 - This is a binary `snake` vs `no_snake` prototype, not species identification software.
 - The public benchmark in this repo is on generated placeholder imagery, not licensed wildlife photography.
 - The original scraped prototype corpus remains excluded from redistribution until each source is rights-cleared.
+- The new `collect-inat` flow is for building a local real-photo corpus, not for silently converting the current public benchmark into a wildlife-performance claim.
 - A live Space URL is per-account: create the Space from this repo ([docs/hf_space.md](docs/hf_space.md)); until you publish and set `NEXT_PUBLIC_SNAKE_DEMO_URL`, treat the demo as validated locally and on HF after your first successful build.
 
 ## Resume-Ready Bullets

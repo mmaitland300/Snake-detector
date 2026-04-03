@@ -15,7 +15,7 @@ from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn.preprocessing import StandardScaler
 
 from .config import AppConfig, ensure_parent, save_config
-from .data import build_generators
+from .data import RAW_IMAGE_EXTENSIONS, build_generators, count_split_images
 from .models import ModelSpec, build_binary_classifier
 
 
@@ -28,6 +28,31 @@ def set_seed(seed: int) -> None:
         tf.random.set_seed(seed)
     except Exception:
         pass
+
+
+def _skipped_test_metrics(config: AppConfig, class_names: list[str]) -> dict:
+    """Persist metrics JSON when the testing split has no images (e.g. tiny grouped split)."""
+    metrics = {
+        "accuracy": None,
+        "macro_precision": None,
+        "macro_recall": None,
+        "macro_f1": None,
+        "classification_report": {},
+        "confusion_matrix": [],
+        "class_names": class_names,
+        "confusion_matrix_path": str(config.paths.confusion_matrix_path),
+        "predictions_panel_path": str(config.paths.predictions_panel_path),
+        "predictions_manifest_path": str(config.paths.predictions_manifest_path),
+        "test_evaluation_skipped": True,
+        "test_evaluation_reason": "No images in testing split.",
+    }
+    ensure_parent(config.paths.metrics_path)
+    config.paths.metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    return metrics
+
+
+def _keras_test_skipped_metrics(config: AppConfig, train_gen) -> dict:
+    return _skipped_test_metrics(config, sorted(train_gen.class_indices.keys()))
 
 
 def train_model(config: AppConfig) -> dict:
@@ -50,15 +75,17 @@ def train_model(config: AppConfig) -> dict:
         )
     )
 
-    history = model.fit(
-        train_gen,
-        validation_data=val_gen,
-        epochs=config.train.epochs,
-    )
+    fit_kwargs: dict = {"epochs": config.train.epochs}
+    if val_gen is not None:
+        fit_kwargs["validation_data"] = val_gen
+    history = model.fit(train_gen, **fit_kwargs)
     ensure_parent(config.paths.model_path)
     model.save(config.paths.model_path)
 
-    metrics = evaluate_model(model, test_gen, config)
+    if test_gen is None:
+        metrics = _keras_test_skipped_metrics(config, train_gen)
+    else:
+        metrics = evaluate_model(model, test_gen, config)
     metrics["history"] = history.history
     _save_training_curves(history.history, config.paths.metrics_path.parent / "training_curves.png")
     save_config(config, config.paths.metrics_path.parent / "run_config.json")
@@ -68,7 +95,12 @@ def train_model(config: AppConfig) -> dict:
 def evaluate_saved_model(config: AppConfig) -> dict:
     artifact = _maybe_load_joblib_artifact(config.paths.model_path)
     if artifact is not None:
-        test_images, test_labels, class_names = _load_split_records(config.data.split_dir / "testing")
+        test_root = config.data.split_dir / "testing"
+        test_images, test_labels, class_names = _load_split_records(test_root)
+        if count_split_images(test_root) == 0:
+            if not class_names:
+                _, _, class_names = _load_split_records(config.data.split_dir / "training")
+            return _skipped_test_metrics(config, class_names)
         x_test = np.stack([_extract_feature_vector(path, artifact["feature_size"]) for path in test_images])
         scores = artifact["classifier"].predict_proba(x_test)[:, 1]
         pred_labels = artifact["classifier"].predict(x_test)
@@ -92,6 +124,11 @@ def evaluate_saved_model(config: AppConfig) -> dict:
         batch_size=config.train.batch_size,
         seed=config.data.seed,
     )
+    if test_gen is None:
+        raise RuntimeError(
+            "No images under the testing split; cannot evaluate. "
+            "Use a split with test samples or a different split strategy."
+        )
     model = load_model(config.paths.model_path)
     return evaluate_model(model, test_gen, config)
 
@@ -232,11 +269,20 @@ def build_sample_predictions_panel(
 def _save_training_curves(history: dict, output_path: Path) -> None:
     plt.style.use("ggplot")
     plt.figure()
-    epochs = range(1, len(history.get("loss", [])) + 1)
-    plt.plot(epochs, history.get("loss", []), label="train_loss")
-    plt.plot(epochs, history.get("val_loss", []), label="val_loss")
-    plt.plot(epochs, history.get("accuracy", []), label="train_accuracy")
-    plt.plot(epochs, history.get("val_accuracy", []), label="val_accuracy")
+    loss = history.get("loss", [])
+    if not loss:
+        plt.close()
+        return
+    epochs = range(1, len(loss) + 1)
+    series = [
+        (loss, "train_loss"),
+        (history.get("val_loss", []), "val_loss"),
+        (history.get("accuracy", []), "train_accuracy"),
+        (history.get("val_accuracy", []), "val_accuracy"),
+    ]
+    for values, label in series:
+        if values:
+            plt.plot(range(1, len(values) + 1), values, label=label)
     plt.title("Training Loss and Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Score")
@@ -248,11 +294,11 @@ def _save_training_curves(history: dict, output_path: Path) -> None:
 
 def _train_sklearn_model(config: AppConfig) -> dict:
     train_images, train_labels, class_names = _load_split_records(config.data.split_dir / "training")
-    test_images, test_labels, _ = _load_split_records(config.data.split_dir / "testing")
+    test_root = config.data.split_dir / "testing"
+    test_images, test_labels, _ = _load_split_records(test_root)
     feature_size = min(config.train.image_size, 48)
 
     x_train = np.stack([_extract_feature_vector(path, feature_size) for path in train_images])
-    x_test = np.stack([_extract_feature_vector(path, feature_size) for path in test_images])
 
     classifier = SklearnPipeline(
         steps=[
@@ -280,16 +326,20 @@ def _train_sklearn_model(config: AppConfig) -> dict:
     ensure_parent(config.paths.model_path)
     joblib.dump(artifact, config.paths.model_path)
 
-    scores = classifier.predict_proba(x_test)[:, 1]
-    pred_labels = classifier.predict(x_test)
-    metrics = _save_evaluation_outputs(
-        true_labels=np.array(test_labels),
-        pred_labels=np.array(pred_labels),
-        scores=np.array(scores),
-        class_names=class_names,
-        image_paths=test_images,
-        config=config,
-    )
+    if count_split_images(test_root) == 0:
+        metrics = _skipped_test_metrics(config, class_names)
+    else:
+        x_test = np.stack([_extract_feature_vector(path, feature_size) for path in test_images])
+        scores = classifier.predict_proba(x_test)[:, 1]
+        pred_labels = classifier.predict(x_test)
+        metrics = _save_evaluation_outputs(
+            true_labels=np.array(test_labels),
+            pred_labels=np.array(pred_labels),
+            scores=np.array(scores),
+            class_names=class_names,
+            image_paths=test_images,
+            config=config,
+        )
     metrics["history"] = {
         "backend": "sklearn_mlp",
         "iterations": int(classifier.named_steps["mlp"].n_iter_),
@@ -366,7 +416,7 @@ def _load_split_records(split_root: Path) -> tuple[list[Path], list[int], list[s
     for label_idx, class_name in enumerate(class_names):
         class_dir = split_root / class_name
         for image_path in sorted(class_dir.glob("*")):
-            if image_path.suffix.lower() not in {".jpg", ".jpeg", ".png"}:
+            if image_path.suffix.lower() not in RAW_IMAGE_EXTENSIONS:
                 continue
             image_paths.append(image_path)
             labels.append(label_idx)
