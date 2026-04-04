@@ -1,5 +1,5 @@
-# Hugging Face Space: pin loosely; Space rebuilds pick current minors.
+# Hugging Face Space: keep Gradio near README sdk_version (e.g. 6.11.x) so Hub metadata matches pip.
 tensorflow>=2.16,<3
-gradio>=5.0
+gradio>=6.11,<7
 numpy>=1.26
 pillow>=10.0

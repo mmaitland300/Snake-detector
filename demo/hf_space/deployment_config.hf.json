@@ -1,5 +1,5 @@
 {
-  "model_path": "artifacts/collection_main_v1_weighted/model.keras",
+  "model_path": "model.keras",
   "image_size": 160,
   "threshold": 0.76,
   "low_threshold": 0.24,
