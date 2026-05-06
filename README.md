@@ -10,11 +10,13 @@ The repository is intentionally honest about legality and scope:
 
 ## Current Status
 
+- Public Hugging Face Space is published and linked from the portfolio.
+- The public benchmark remains placeholder-safe and does not claim real-world wildlife detection quality.
 - Reproducible CLI flow validated on March 21, 2026:
   `split -> train -> eval -> predict`
 - Local Gradio app updated to load the validated placeholder artifact at `artifacts/model.joblib`
 - Final artifact-hosting choice documented as **GitHub Release asset**
-- Hugging Face Space deployment: [`app/gradio_app.py`](app/gradio_app.py) (or default root [`app.py`](app.py) re-export) + [`requirements.txt`](requirements.txt); see [docs/hf_space.md](docs/hf_space.md). After deploy, set portfolio `NEXT_PUBLIC_SNAKE_DEMO_URL` to the **app URL** `https://<subdomain>.hf.space`, not the Space repo page.
+- Hugging Face Space deployment: [`app/gradio_app.py`](app/gradio_app.py) (or default root [`app.py`](app.py) re-export) + [`requirements.txt`](requirements.txt); see [docs/hf_space.md](docs/hf_space.md). The live Hugging Face Space is published at https://huggingface.co/spaces/mmaitland/snake-detector-demo. The portfolio links to that public demo surface. If using the direct app URL, keep `NEXT_PUBLIC_SNAKE_DEMO_URL` pointed at the active Hugging Face app endpoint, not a placeholder.
 
 ## Deployment Plan
 

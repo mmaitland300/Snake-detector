@@ -8,7 +8,7 @@ Finalized on March 21, 2026
 
 - Portfolio site is hosted on Vercel.
 - The repository now has a validated local Gradio demo path and a reproducible placeholder-safe model artifact.
-- A public Hugging Face Space has not been published from this workspace, so the repo must not claim a live URL yet.
+- A public Hugging Face Space is now published and linked from the portfolio. The hosted demo is still a bounded snake/no-snake experiment backed by the current public artifact path, not a field-safe wildlife classifier.
 - The model artifact needs a single documented public hosting choice for release packaging.
 
 ## Final Decision
@@ -29,12 +29,12 @@ Use a two-surface delivery model:
 
 - Local demo path: validated
 - Public benchmark artifacts: generated
-- Public Space URL: not yet published
+- Public Space URL: https://huggingface.co/spaces/mmaitland/snake-detector-demo
 - Safe public artifact to ship first: `artifacts/model.joblib`
 
-## Fallback Plan
+## Fallback Plan if the Hugging Face Space is unavailable
 
-Until a Hugging Face Space is live, the portfolio page should show:
+If the Space is unavailable, the portfolio page should show:
 
 - benchmark table
 - confusion matrix
