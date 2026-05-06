@@ -15,15 +15,15 @@ Finalized on March 21, 2026
 
 Use a two-surface delivery model:
 
-1. Demo surface: Hugging Face Spaces (Gradio) when manually published.
+1. Demo surface: Hugging Face Spaces (Gradio) at the published public Space URL (same bounded demo as local).
 2. Portfolio and artifact surface: GitHub repository + **GitHub Release asset** for the pinned model artifact.
 
 ## Why GitHub Release Asset Won
 
 - It keeps the artifact attached to the same tagged portfolio release as the docs and proof package.
 - The validated placeholder-safe baseline artifact is small enough to distribute this way.
-- It avoids introducing a second remote model registry before a real public Space is published.
-- It matches the current evidence level: local validation is complete, remote deployment is still a manual follow-up.
+- It avoids introducing a second remote model registry: the hosted demo consumes the documented GitHub Release artifact path instead of HF Model Hub weights.
+- It matches the current evidence level: local and hosted demos exercise the same pinned release artifact, while public benchmarking stays on generated placeholder data.
 
 ## Current Publishable State
 
@@ -44,12 +44,12 @@ If the Space is unavailable, the portfolio page should show:
 
 ## Non-goals for This Release
 
-- Claiming an active hosted URL that has not been published
+- Claiming field-ready wildlife monitoring, species identification, or real-world performance beyond the published bounded demo
 - Shipping unverified scraped images
 - Presenting the placeholder benchmark as a real-world wildlife-performance claim
 
 ## Revisit Triggers
 
-- A Hugging Face Space is published and needs a permanent URL added to the README
+- The Hugging Face Space URL, app endpoint (`*.hf.space`), or portfolio `NEXT_PUBLIC_SNAKE_DEMO_URL` changes and docs must stay in sync
 - A rights-cleared real-image dataset becomes available for public benchmarking
 - The artifact outgrows practical GitHub Release distribution
