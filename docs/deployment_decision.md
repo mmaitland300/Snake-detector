@@ -8,14 +8,14 @@ Finalized on March 21, 2026
 
 - Portfolio site is hosted on Vercel.
 - The repository now has a validated local Gradio demo path and a reproducible placeholder-safe model artifact.
-- A public Hugging Face Space is now published and linked from the portfolio. The hosted demo is still a bounded snake/no-snake experiment backed by the current public artifact path, not a field-safe wildlife classifier.
+- A public Hugging Face Space is now published on Hugging Face (gallery / repo page). Portfolio CTAs and **`NEXT_PUBLIC_SNAKE_DEMO_URL`** still follow [docs/hf_space.md](hf_space.md): use the direct **`*.hf.space`** app URL from the Space UI, not the gallery page. The hosted demo remains a bounded snake/no-snake experiment backed by the current public artifact path, not a field-safe wildlife classifier.
 - The model artifact needs a single documented public hosting choice for release packaging.
 
 ## Final Decision
 
 Use a two-surface delivery model:
 
-1. Demo surface: Hugging Face Spaces (Gradio) at the published public Space URL (same bounded demo as local).
+1. Demo surface: Hugging Face Spaces (Gradio) — public gallery at `https://huggingface.co/spaces/mmaitland/snake-detector-demo`; portfolio live links use the **`*.hf.space`** app URL per [docs/hf_space.md](hf_space.md) (same bounded demo as local).
 2. Portfolio and artifact surface: GitHub repository + **GitHub Release asset** for the pinned model artifact.
 
 ## Why GitHub Release Asset Won
@@ -29,7 +29,8 @@ Use a two-surface delivery model:
 
 - Local demo path: validated
 - Public benchmark artifacts: generated
-- Public Space URL: https://huggingface.co/spaces/mmaitland/snake-detector-demo
+- Space gallery / repo URL: https://huggingface.co/spaces/mmaitland/snake-detector-demo
+- Portfolio **`NEXT_PUBLIC_SNAKE_DEMO_URL`** (and primary live CTA): `https://<space-subdomain>.hf.space` from the Space embed / direct app link — not the gallery URL; see [docs/hf_space.md](hf_space.md)
 - Safe public artifact to ship first: `artifacts/model.joblib`
 
 ## Fallback Plan if the Hugging Face Space is unavailable

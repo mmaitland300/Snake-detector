@@ -10,13 +10,13 @@ The repository is intentionally honest about legality and scope:
 
 ## Current Status
 
-- Public Hugging Face Space is published and linked from the portfolio.
+- Public Hugging Face Space is published on Hugging Face: [Space gallery / repo](https://huggingface.co/spaces/mmaitland/snake-detector-demo). Portfolio **Try live demo** links and **`NEXT_PUBLIC_SNAKE_DEMO_URL`** must use the direct **`https://<space-subdomain>.hf.space`** app URL from the Space UI (not the gallery page); see [docs/hf_space.md](docs/hf_space.md).
 - The public benchmark remains placeholder-safe and does not claim real-world wildlife detection quality.
 - Reproducible CLI flow validated on March 21, 2026:
   `split -> train -> eval -> predict`
 - Local Gradio app updated to load the validated placeholder artifact at `artifacts/model.joblib`
 - Final artifact-hosting choice documented as **GitHub Release asset**
-- Hugging Face Space deployment: [`app/gradio_app.py`](app/gradio_app.py) (or default root [`app.py`](app.py) re-export) + [`requirements.txt`](requirements.txt); see [docs/hf_space.md](docs/hf_space.md). The live Hugging Face Space is published at https://huggingface.co/spaces/mmaitland/snake-detector-demo. The portfolio links to that public demo surface. If using the direct app URL, keep `NEXT_PUBLIC_SNAKE_DEMO_URL` pointed at the active Hugging Face app endpoint, not a placeholder.
+- Hugging Face Space deployment: [`app/gradio_app.py`](app/gradio_app.py) (or default root [`app.py`](app.py) re-export) + [`requirements.txt`](requirements.txt); see [docs/hf_space.md](docs/hf_space.md).
 
 ## Deployment Plan
 
@@ -151,7 +151,7 @@ Representative correct and failure cases:
 - The public benchmark in this repo is on generated placeholder imagery, not licensed wildlife photography.
 - The original scraped prototype corpus remains excluded from redistribution until each source is rights-cleared.
 - The new `collect-inat` flow is for building a local real-photo corpus, not for silently converting the current public benchmark into a wildlife-performance claim.
-- A live Space URL is per-account: create the Space from this repo ([docs/hf_space.md](docs/hf_space.md)); until you publish and set `NEXT_PUBLIC_SNAKE_DEMO_URL`, treat the demo as validated locally and on HF after your first successful build.
+- Live demo wiring: create or update the Space from this repo ([docs/hf_space.md](docs/hf_space.md)); keep **`NEXT_PUBLIC_SNAKE_DEMO_URL`** on the active **`*.hf.space`** app endpoint, not the `huggingface.co/spaces/...` gallery URL.
 
 ## Resume-Ready Bullets
 
