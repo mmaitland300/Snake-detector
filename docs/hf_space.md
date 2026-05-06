@@ -29,7 +29,7 @@ Current artifact source: [GitHub Release v1.0.0 `model.joblib`](https://github.c
    - use whatever **sync or upload** flow the Space UI offers for your account (wording and options change; do not assume a specific one-click GitHub link until you see it in your UI).
 4. Ensure the Space installs dependencies from root [`requirements.txt`](../requirements.txt) (`.[demo]`). Open **Logs** on first build if `pip install` fails.
 5. Set the **app file** if you are not using the default `app.py`: in the Space README front matter, set `app_file` to `app/gradio_app.py` (see YAML below).
-6. **Branch:** If the Space tracks a Git branch (or you mirror from GitHub), point it at this repository's **default branch**. Today that is `master`; if you rename the default branch to `main` (or anything else), update the Space settings so the tracked branch matches, or builds will lag behind the wrong ref.
+6. **Branch:** If the Space tracks a Git branch (or you mirror from GitHub), point it at this repository's **default branch** (`main`). If the default branch is renamed later, update the Space settings so the tracked branch matches, or builds will lag behind the wrong ref.
 
 ## Public URL for the portfolio (embed / "Try live demo")
 
