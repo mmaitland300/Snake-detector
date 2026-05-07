@@ -70,8 +70,8 @@ def build_demo() -> Any:
             "# Snake Detector (bounded demo)\n\n"
             "Binary experiment: label an upload as `snake` or `no_snake`. "
             "This is **not** species identification or field-ready wildlife classification.\n\n"
-            "The published model is a **pipeline-validation** artifact trained on generated "
-            "placeholder imagery; see the repository README for benchmark scope and legal boundaries.\n\n"
+            "The repository supports both a lightweight placeholder baseline and a real-photo "
+            "Keras release path; see the README for current model scope and legal boundaries.\n\n"
             "Free-tier hosts may sleep briefly on first open."
         )
         image_input = gr.Image(type="pil", label="Input image")

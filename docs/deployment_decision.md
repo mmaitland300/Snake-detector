@@ -2,55 +2,59 @@
 
 ## Status
 
-Finalized on March 21, 2026
+Finalized on March 21, 2026. Updated on May 7, 2026 after the live Hugging Face Space moved to a real-photo iNaturalist-trained Keras model.
 
 ## Context
 
 - Portfolio site is hosted on Vercel.
-- The repository now has a validated local Gradio demo path and a reproducible placeholder-safe model artifact.
-- A public Hugging Face Space is now published on Hugging Face (gallery / repo page). Portfolio CTAs and **`NEXT_PUBLIC_SNAKE_DEMO_URL`** still follow [docs/hf_space.md](hf_space.md): use the direct **`*.hf.space`** app URL from the Space UI, not the gallery page. The hosted demo remains a bounded snake/no-snake experiment backed by the current public artifact path, not a field-safe wildlife classifier.
-- The model artifact needs a single documented public hosting choice for release packaging.
+- Public demo is hosted on Hugging Face Spaces.
+- The live Space now serves a real-photo Keras model (`model.keras`) with `image_size=160`, `threshold=0.76`, and InceptionV3 preprocessing.
+- The repository still keeps a lightweight placeholder-safe baseline (`artifacts/model.joblib`) for reproducible engineering proof and local smoke tests.
+- The real Keras model is too large for normal git history, so it needs release/Space storage instead of direct repository tracking.
 
-## Final Decision
+## Current Decision
 
-Use a two-surface delivery model:
+Use a three-surface delivery model:
 
-1. Demo surface: Hugging Face Spaces (Gradio) — public gallery at `https://huggingface.co/spaces/mmaitland/snake-detector-demo`; portfolio live links use the **`*.hf.space`** app URL per [docs/hf_space.md](hf_space.md) (same bounded demo as local).
-2. Portfolio and artifact surface: GitHub repository + **GitHub Release asset** for the pinned model artifact.
+1. **Demo surface:** Hugging Face Spaces (Gradio), with portfolio links using `https://mmaitland-snake-detector-demo.hf.space`.
+2. **Large-artifact mirror:** GitHub Release `v1.1.0-real-dataset`, containing `model.keras`, deployment config, run config, held-out metrics, threshold sweep, and visual evaluation artifacts.
+3. **Repository proof surface:** README/docs/tests/CI plus the smaller placeholder-safe baseline that demonstrates the package workflow without redistributing third-party photos.
 
-## Why GitHub Release Asset Won
+## Why This Shape
 
-- It keeps the artifact attached to the same tagged portfolio release as the docs and proof package.
-- The validated placeholder-safe baseline artifact is small enough to distribute this way.
-- It avoids introducing a second remote model registry: the hosted demo consumes the documented GitHub Release artifact path instead of HF Model Hub weights.
-- It matches the current evidence level: local and hosted demos exercise the same pinned release artifact, while public benchmarking stays on generated placeholder data.
+- Hugging Face Space storage is the practical runtime home for the live Keras model.
+- GitHub Releases are appropriate for versioned model artifacts that are too large for normal git tracking.
+- Keeping placeholder artifacts labeled as an engineering baseline avoids mixing legal-safe workflow proof with real-photo model-quality claims.
+- The real-photo release package lets reviewers verify what is live without requiring raw iNaturalist image redistribution.
 
 ## Current Publishable State
 
-- Local demo path: validated
-- Public benchmark artifacts: generated
-- Space gallery / repo URL: https://huggingface.co/spaces/mmaitland/snake-detector-demo
-- Portfolio **`NEXT_PUBLIC_SNAKE_DEMO_URL`** (and primary live CTA): `https://<space-subdomain>.hf.space` from the Space embed / direct app link — not the gallery URL; see [docs/hf_space.md](hf_space.md)
-- Safe public artifact to ship first: `artifacts/model.joblib`
+- Live app URL: `https://mmaitland-snake-detector-demo.hf.space`
+- Space repo URL: `https://huggingface.co/spaces/mmaitland/snake-detector-demo`
+- Live model: Space-side `model.keras`
+- Release package: [releases/v1.1.0-real-dataset.md](releases/v1.1.0-real-dataset.md)
+- Older placeholder artifact: [GitHub Release v1.0.0 `model.joblib`](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib)
 
-## Fallback Plan if the Hugging Face Space is unavailable
+## Fallback Plan if the Hugging Face Space Is Unavailable
 
 If the Space is unavailable, the portfolio page should show:
 
-- benchmark table
-- confusion matrix
-- sample prediction panel
-- short note that the public benchmark is on generated placeholder data
-- local-demo validation instructions or a later demo screenshot/GIF once captured
+- Real-photo release metrics and model artifact link
+- Placeholder-safe workflow benchmark, clearly labeled as a baseline
+- Confusion matrix and sample prediction artifacts
+- Local-demo validation instructions
+- A short note that the app is a bounded binary demo, not wildlife safety guidance
 
-## Non-goals for This Release
+## Non-Goals for This Release
 
-- Claiming field-ready wildlife monitoring, species identification, or real-world performance beyond the published bounded demo
-- Shipping unverified scraped images
-- Presenting the placeholder benchmark as a real-world wildlife-performance claim
+- Claiming field-ready wildlife monitoring, species identification, or safe handling guidance
+- Shipping raw third-party images in git or GitHub Releases
+- Presenting placeholder benchmark metrics as real-world wildlife performance
+- Comparing placeholder metrics directly against real-photo metrics as if they came from the same dataset
 
 ## Revisit Triggers
 
-- The Hugging Face Space URL, app endpoint (`*.hf.space`), or portfolio `NEXT_PUBLIC_SNAKE_DEMO_URL` changes and docs must stay in sync
-- A rights-cleared real-image dataset becomes available for public benchmarking
-- The artifact outgrows practical GitHub Release distribution
+- The Hugging Face Space URL, app endpoint, or portfolio `NEXT_PUBLIC_SNAKE_DEMO_URL` changes
+- The Space runtime is mirrored back to GitHub and should download the Keras release asset automatically
+- A larger or cleaner rights-audited real-image dataset is prepared
+- The model artifact outgrows practical GitHub Release distribution

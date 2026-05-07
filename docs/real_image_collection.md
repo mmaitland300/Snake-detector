@@ -1,8 +1,10 @@
 # Real Wildlife Image Collection
 
-The current checked-in `model.joblib` is a placeholder-safe demo artifact, not a good wildlife-photo model.
+The checked-in `model.joblib` is a placeholder-safe demo artifact, not the live wildlife-photo model.
+The current live Hugging Face Space uses a real-photo iNaturalist-trained Keras model documented in
+[releases/v1.1.0-real-dataset.md](releases/v1.1.0-real-dataset.md).
 
-If you want to retrain this project on real snake photography, the safest repeatable path is:
+If you want to retrain or extend this project on real snake photography, the safest repeatable path is:
 
 1. Build a metadata manifest from a source with an API and explicit license fields.
 2. Download only records that meet your license policy.
@@ -156,8 +158,8 @@ Include animals and scenes that are commonly confused with snakes:
 
 ## Hosting recommendation
 
-Do not market or host the current placeholder model as a real wildlife identifier.
-Either:
+Do not market the placeholder model as a real wildlife identifier.
 
-- keep the current demo as an engineering prototype with explicit placeholder-data language, or
-- replace it only after retraining on real photos and validating on a held-out real-photo test set.
+The current real-photo model can be described as a bounded iNaturalist-trained demo with held-out metrics.
+Avoid species-identification, field-safety, or wildlife-handling claims unless a later validation program
+actually supports them.

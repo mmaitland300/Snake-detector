@@ -6,24 +6,26 @@ Snake Detector is a bounded ML engineering project that turns a Colab-era snake/
 
 - Binary image-classification demo: `snake` vs `no_snake`.
 - Package-based workflows with documented `split -> train -> eval -> predict` paths.
-- Portfolio-safe publication path using generated placeholder images, plus an implemented iNaturalist collection/retraining workflow for real-photo runs.
+- Two publication lanes: generated placeholder artifacts for reproducible engineering proof, plus a real-photo iNaturalist-trained model for the live demo.
 - Engineering proof package, not field-ready wildlife detection software.
 
 ## Status
 
-- Public Hugging Face Space gallery/repo is published: [snake-detector-demo](https://huggingface.co/spaces/mmaitland/snake-detector-demo).
+- Live Hugging Face Space is published: [snake-detector-demo](https://huggingface.co/spaces/mmaitland/snake-detector-demo), with direct app host `https://mmaitland-snake-detector-demo.hf.space`.
 - Reproducible CLI flow validated on March 21, 2026.
-- Local Gradio app loads the validated placeholder artifact at `artifacts/model.joblib`.
-- Model artifact hosting is documented as a GitHub Release asset: [v1.0.0 model.joblib](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib).
-- The current public release artifact and README benchmark remain placeholder-safe; iNaturalist retraining work needs a deliberate public release package before it becomes the headline benchmark.
+- The live Space serves a real-photo trained Keras model (`model.keras`) using InceptionV3 preprocessing, 160px inputs, and a 0.76 decision threshold.
+- Real model release package: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md).
+- The GitHub README still preserves the older placeholder-safe benchmark as an engineering baseline.
+- GitHub Release `v1.1.0-real-dataset` is the intended large-artifact mirror for the real model and evaluation assets.
 
 ## Demo
 
-- Hugging Face Space gallery/repo: [huggingface.co/spaces/mmaitland/snake-detector-demo](https://huggingface.co/spaces/mmaitland/snake-detector-demo)
+- Live app: [mmaitland-snake-detector-demo.hf.space](https://mmaitland-snake-detector-demo.hf.space)
+- Hugging Face Space repo: [huggingface.co/spaces/mmaitland/snake-detector-demo](https://huggingface.co/spaces/mmaitland/snake-detector-demo)
 - Local Gradio app: `python app/gradio_app.py`
 - Hugging Face Space entrypoint: [`app/gradio_app.py`](app/gradio_app.py), with root [`app.py`](app.py) as a thin re-export.
 
-Portfolio **Try live demo** links and `NEXT_PUBLIC_SNAKE_DEMO_URL` should use the direct `https://<space-subdomain>.hf.space` app URL from the Space UI, not the gallery page. See [docs/hf_space.md](docs/hf_space.md).
+Portfolio **Try live demo** links and `NEXT_PUBLIC_SNAKE_DEMO_URL` should use `https://mmaitland-snake-detector-demo.hf.space`, not the gallery page. See [docs/hf_space.md](docs/hf_space.md).
 
 ## Run Locally
 
@@ -79,6 +81,7 @@ python app.py
 
 ## Evidence
 
+- Real-photo model release package: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md)
 - Benchmark table: [docs/assets/benchmark_table.md](docs/assets/benchmark_table.md)
 - Confusion matrix summary: [docs/assets/confusion_matrix.md](docs/assets/confusion_matrix.md)
 - Sample prediction summary: [docs/assets/sample_predictions.md](docs/assets/sample_predictions.md)
@@ -98,14 +101,14 @@ Generated source-of-truth files:
 ## Limits
 
 - This is a binary `snake` vs `no_snake` prototype, not species identification software.
-- The public benchmark in this repo is on generated placeholder imagery, not licensed wildlife photography.
+- The live demo is trained on real iNaturalist-sourced imagery, but the checked-in README benchmark below is still the older generated-placeholder baseline.
 - The original scraped prototype corpus remains excluded from redistribution until each source is rights-cleared.
-- iNaturalist retraining should be promoted only with a tracked source/manifest summary, published artifact choice, and held-out real-photo metrics.
+- The real-photo model is packaged for release as a model/evaluation artifact; raw third-party image files remain out of git.
 - Live demo wiring should use the active `*.hf.space` app endpoint, not the `huggingface.co/spaces/...` gallery URL.
 
 ## Dataset and Licensing
 
-Two dataset lanes are tracked separately:
+Three dataset lanes are tracked separately:
 
 1. Original prototype corpus: local-only, rights not verified, excluded from publication.
 2. Approved public-safe dataset: generated locally with `python -m snake_detector.demo_data` and used for README/demo artifacts.
@@ -117,7 +120,23 @@ Legal references:
 - [docs/dataset_sources.csv](docs/dataset_sources.csv)
 - [docs/attribution.md](docs/attribution.md)
 
-## Placeholder-Safe Benchmark
+## Real-Photo Model Metrics
+
+Release package: [v1.1.0-real-dataset](docs/releases/v1.1.0-real-dataset.md)
+
+Held-out test split: 1,283 iNaturalist-sourced images (`255` snake, `1,028` no-snake) at threshold `0.76`.
+
+| Metric | Value |
+| --- | ---: |
+| Accuracy | 0.9026 |
+| Macro Precision | 0.8652 |
+| Macro Recall | 0.8139 |
+| Macro F1 | 0.8358 |
+| Snake Precision | 0.8095 |
+| Snake Recall | 0.6667 |
+| Snake F1 | 0.7312 |
+
+## Placeholder-Safe Baseline
 
 Run date: March 21, 2026  
 Dataset: 144 generated placeholder images, 29-image held-out test split  
@@ -159,8 +178,10 @@ flowchart TD
 
 - Portfolio website: Vercel
 - Demo host: Hugging Face Spaces (Gradio)
-- Model artifact host: GitHub Release asset
-- Current release artifact: [v1.0.0 model.joblib](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib)
+- Live model artifact: Space-side `model.keras`
+- Live model config: `image_size=160`, `threshold=0.76`, `preprocessing=inception_v3_preprocess_input`
+- GitHub Release mirror: `v1.1.0-real-dataset`
+- Older placeholder-safe artifact: [v1.0.0 model.joblib](https://github.com/mmaitland300/Snake-detector/releases/download/v1.0.0/model.joblib)
 - Fallback when the live demo is unavailable: local validation evidence + checked-in proof artifacts
 
 Decision record: [docs/deployment_decision.md](docs/deployment_decision.md)
@@ -169,7 +190,7 @@ Decision record: [docs/deployment_decision.md](docs/deployment_decision.md)
 
 - Refactored a legacy Colab computer-vision prototype into a package-based CLI workflow with tests, linting, and CI-ready structure, reducing the project to documented split/train/eval/predict paths.
 - Added a legally safe publication mode by separating the original unverified dataset from a reproducible 144-image generated placeholder dataset used for public demo and benchmark artifacts.
-- Added an iNaturalist collection and retraining workflow for real-photo experiments while keeping public benchmark claims separate from placeholder-safe release artifacts.
+- Deployed a real-photo trained iNaturalist Keras model to Hugging Face Spaces while keeping the older placeholder-safe benchmark clearly labeled as an engineering baseline.
 
 ## Legacy Scripts
 

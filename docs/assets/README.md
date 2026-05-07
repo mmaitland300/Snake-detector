@@ -10,5 +10,6 @@ This directory stores publication assets referenced by `README.md`.
 - `demo_capture.md` and eventual `demo_screenshot.png` (or `demo_walkthrough.gif`)
 
 ## Current status
-Run-generated benchmark, confusion matrix, and sample prediction summaries are now checked in.
+Run-generated placeholder benchmark, confusion matrix, and sample prediction summaries are checked in as the lightweight engineering baseline.
+Real-photo model metrics and release assets are documented under `docs/releases/`.
 Demo screenshots/GIF capture can be added later when a manual browser capture is available.
