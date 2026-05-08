@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-Set-Location "C:\dev\Cursor Projects\Snake-detector"
+$RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
+Set-Location -LiteralPath $RepoRoot
 
 function Run-Python {
     param(

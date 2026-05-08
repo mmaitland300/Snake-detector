@@ -5,7 +5,7 @@ Visitor-facing labels use three bands (likely snake / undetermined / likely not)
 Local (repo): default deployment_config.json points at artifacts/... relative to this folder.
 From demo/hf_space the venv is at the repo root (two levels up). Example:
 
-  cd "C:\dev\Cursor Projects\Snake-detector\demo\hf_space"
+  cd "<repo>\\demo\\hf_space"
   ..\..\.venv\Scripts\python app.py
 
 Or run .\run_local.ps1 from hf_space.

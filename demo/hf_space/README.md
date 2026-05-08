@@ -13,23 +13,22 @@ A Space is **its own Git repository** on Hugging Face. The Hub's "clone -> add `
 ### Step-by-step (recommended)
 
 1. On [huggingface.co/new-space](https://huggingface.co/new-space), create a **Gradio** Space and note the repo URL, e.g. `https://huggingface.co/spaces/<you>/<space-name>`.
-2. **Clone** that repo to a **sibling** of this monorepo, e.g.  
-   `C:\dev\Cursor Projects\snake-detector-demo`  
+2. **Clone** that repo to a **sibling** of this monorepo, for example `C:\path\to\workspace\snake-detector-demo`
    (same parent as `Snake-detector`, **not** inside `Snake-detector\demo\hf_space`).
    ```powershell
-   cd "C:\dev\Cursor Projects"
+   cd "C:\path\to\workspace"
    git clone https://huggingface.co/spaces/<you>/<space-name>.git
    ```
 3. **Copy files into the clone** (manual copy is fine), or from `demo\hf_space` run:
    ```powershell
-   .\publish_to_hf_space.ps1 -SpaceRepoPath "C:\dev\Cursor Projects\<space-folder>"
+   .\publish_to_hf_space.ps1 -SpaceRepoPath "C:\path\to\workspace\<space-folder>"
    ```
    That script copies **`app.py`**, **`requirements.txt`**, **`deployment_config.json`** (from committed **`deployment_config.hf.json`**, which sets `"model_path": "model.keras"`), and **`model.keras`** if your local `deployment_config.json` path resolves to an existing file under `artifacts/`.
 4. **`README.md` in the clone:** Hugging Face created a YAML header (`sdk: gradio`, etc.). **Do not replace the whole file** with only this folder's README, or the Space may lose SDK metadata. Keep the `---` / `sdk:` block at the top; add the disclaimer and any extra sections below it.
 5. **Large `model.keras` (run inside the Space clone before the first commit that adds weights):**
    ```powershell
    git lfs install   # once per machine, if needed
-   cd "C:\dev\Cursor Projects\snake-detector-demo"   # your clone path
+   cd "C:\path\to\workspace\snake-detector-demo"   # your clone path
    git lfs track "*.keras"
    ```
    Confirm `.gitattributes` contains a `*.keras` LFS line, then commit `.gitattributes` with the model (either order is fine as long as LFS is active before the large file is added). Alternatively upload `model.keras` via the Hub **Files** tab.

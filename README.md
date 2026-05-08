@@ -205,4 +205,11 @@ Decision record: [docs/deployment_decision.md](docs/deployment_decision.md)
 
 ## Legacy Scripts
 
-Legacy Colab-era scripts are archived under `legacy/` for historical context only and are not part of the primary workflow.
+The repository root intentionally keeps the Hugging Face default `app.py` entrypoint, package/config files, README, and project folders. Legacy Colab-era scripts are archived under `legacy/` for historical context only and are not part of the primary workflow.
+
+Use the package CLI for maintained local workflows:
+
+- `snake-detector split`
+- `snake-detector train`
+- `snake-detector eval`
+- `snake-detector predict`
