@@ -10,7 +10,7 @@
   Absolute or relative path to the root of the cloned Space repository (contains .git).
 
 .EXAMPLE
-  .\publish_to_hf_space.ps1 -SpaceRepoPath "C:\dev\Cursor Projects\snake-detector-demo"
+  .\publish_to_hf_space.ps1 -SpaceRepoPath "C:\path\to\snake-detector-demo"
 #>
 param(
     [Parameter(Mandatory = $true)]
