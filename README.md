@@ -1,22 +1,29 @@
 # Snake Detector
 
-Snake Detector is a bounded ML engineering project that turns a Colab-era snake/no-snake image-classifier prototype into a reproducible Python package, CLI workflow, tests, CI, and Gradio demo path.
+Snake Detector is a bounded computer-vision demo for classifying whole images as
+`snake` or `no_snake`. The live Hugging Face app uses a real-photo
+iNaturalist-trained Keras model; the repository keeps the package, CLI, tests,
+CI, deployment notes, and lightweight placeholder baseline that make the work
+reproducible without committing raw third-party images.
 
 ## What It Is
 
 - Binary image-classification demo: `snake` vs `no_snake`.
+- Live Gradio app backed by a real-photo iNaturalist-trained model.
+- GitHub Release mirror for the real model and evaluation assets:
+  [v1.1.0-real-dataset](https://github.com/mmaitland300/Snake-detector/releases/tag/v1.1.0-real-dataset).
 - Package-based workflows with documented `split -> train -> eval -> predict` paths.
-- Two publication lanes: generated placeholder artifacts for reproducible engineering proof, plus a real-photo iNaturalist-trained model for the live demo.
-- Engineering proof package, not field-ready wildlife detection software.
+- Placeholder-safe local benchmark for reproducible engineering proof.
+- Demo-quality model, not species identification or field-ready wildlife safety software.
 
 ## Status
 
 - Live Hugging Face Space is published: [snake-detector-demo](https://huggingface.co/spaces/mmaitland/snake-detector-demo), with direct app host `https://mmaitland-snake-detector-demo.hf.space`.
-- Reproducible CLI flow validated on March 21, 2026.
 - The live Space serves a real-photo trained Keras model (`model.keras`) using InceptionV3 preprocessing, 160px inputs, and a 0.76 decision threshold.
-- Real model release package: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md).
-- The GitHub README still preserves the older placeholder-safe benchmark as an engineering baseline.
-- GitHub Release `v1.1.0-real-dataset` is the intended large-artifact mirror for the real model and evaluation assets.
+- GitHub Release `v1.1.0-real-dataset` mirrors the real model, config, metrics, threshold sweep, and visual evaluation assets.
+- Reproducible CLI flow validated on March 21, 2026 using the placeholder-safe baseline dataset.
+- Release package details: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md).
+- The checked-in placeholder benchmark below is an engineering baseline, not the live demo model.
 
 ## Demo
 
@@ -28,6 +35,10 @@ Snake Detector is a bounded ML engineering project that turns a Colab-era snake/
 Portfolio **Try live demo** links and `NEXT_PUBLIC_SNAKE_DEMO_URL` should use `https://mmaitland-snake-detector-demo.hf.space`, not the gallery page. See [docs/hf_space.md](docs/hf_space.md).
 
 ## Run Locally
+
+The local commands below rebuild the lightweight placeholder-safe baseline. The
+real-photo Keras model is distributed through the GitHub Release and Hugging Face
+Space files instead of normal git history.
 
 ### 1. Create an environment
 
