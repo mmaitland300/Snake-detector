@@ -4,6 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "snake-detector"
+# Python package version only. Real-photo model/data releases use Git tags such
+# as v1.1.0-real-dataset and are documented separately from this package API.
 version = "0.1.0"
 description = "Portfolio-grade snake vs non-snake image classification pipeline."
 readme = "README.md"

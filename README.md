@@ -25,6 +25,19 @@ reproducible without committing raw third-party images.
 - Release package details: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md).
 - The checked-in placeholder benchmark below is an engineering baseline, not the live demo model.
 
+## Versioning
+
+The Python package version and the model release version are intentionally
+separate:
+
+- `pyproject.toml` version `0.1.0` tracks the installable Python package and CLI
+  surface.
+- `v1.1.0-real-dataset` is the real-photo model/dataset release tag for the
+  Keras artifact, metrics, threshold sweep, and deployment config.
+
+The model release tag does not imply that the Python package API is version
+`1.1.0`.
+
 ## Demo
 
 - Live app: [mmaitland-snake-detector-demo.hf.space](https://mmaitland-snake-detector-demo.hf.space)
@@ -92,6 +105,8 @@ python app.py
 
 ## Evidence
 
+- Model card: [MODEL_CARD.md](MODEL_CARD.md)
+- Dataset card: [DATASET_CARD.md](DATASET_CARD.md)
 - Real-photo model release package: [docs/releases/v1.1.0-real-dataset.md](docs/releases/v1.1.0-real-dataset.md)
 - Benchmark table: [docs/assets/benchmark_table.md](docs/assets/benchmark_table.md)
 - Confusion matrix summary: [docs/assets/confusion_matrix.md](docs/assets/confusion_matrix.md)
