@@ -132,6 +132,13 @@ Generated source-of-truth files:
 - The real-photo model is packaged for release as a model/evaluation artifact; raw third-party image files remain out of git.
 - Live demo wiring should use the active `*.hf.space` app endpoint, not the `huggingface.co/spaces/...` gallery URL.
 
+## Community and Project Notes
+
+- License: [MIT](LICENSE)
+- Contributions: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security reporting: [SECURITY.md](SECURITY.md)
+- Roadmap: [ROADMAP.md](ROADMAP.md)
+
 ## Dataset and Licensing
 
 Three dataset lanes are tracked separately:

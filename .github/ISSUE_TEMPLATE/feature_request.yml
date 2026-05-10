@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest a focused improvement to the bounded demo or reproducible workflow.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The strongest feature requests improve reproducibility, documentation, release packaging, demo reliability, or bounded model evaluation without expanding into field-safety or species-ID claims.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow gap
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the smallest useful change.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI workflow
+        - Local demo
+        - Hugging Face Space
+        - Model card or dataset card
+        - Release packaging
+        - Metrics or evaluation
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundary check
+      options:
+        - label: This request keeps raw third-party images out of git.
+          required: true
+        - label: This request does not imply species identification or field-ready wildlife safety.
+          required: true

@@ -1,0 +1,50 @@
+name: Model or dataset report
+description: Report a model, dataset, license, metric, or release-package concern.
+title: "[Model/Data]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for model-card, dataset-card, release-package, metric, threshold, attribution, or dataset-license concerns. Please do not upload private images or raw third-party datasets.
+  - type: dropdown
+    id: report_type
+    attributes:
+      label: Report type
+      options:
+        - Model metric or threshold concern
+        - Dataset/source/license concern
+        - Attribution concern
+        - Release asset mismatch
+        - Demo behavior mismatch
+        - Documentation correction
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Model or release version
+      placeholder: "v1.1.0-real-dataset"
+    validations:
+      required: true
+  - type: textarea
+    id: concern
+    attributes:
+      label: Concern
+      description: Explain what appears incorrect, missing, or misleading.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting context
+      description: Link to public sources or describe the local reproduction. Do not include private images or location-sensitive data.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: I understand this project is not species-identification or field-safety software.
+          required: true
+        - label: I removed private images, precise locations, and non-redistributable raw data from this report.
+          required: true
