@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security report
+    url: https://github.com/mmaitland300
+    about: Please use a private contact path from the maintainer profile or portfolio for security-sensitive reports.
