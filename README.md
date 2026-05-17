@@ -230,7 +230,7 @@ flowchart TD
 
 Decision record: [docs/deployment_decision.md](docs/deployment_decision.md)
 
-## Resume-Ready Bullets
+## Project Highlights
 
 - Refactored a legacy Colab computer-vision prototype into a package-based CLI workflow with tests, linting, and CI-ready structure, reducing the project to documented split/train/eval/predict paths.
 - Added a publication-safe mode by separating the original unverified dataset from a reproducible 144-image generated placeholder dataset used for public demo and benchmark artifacts.
